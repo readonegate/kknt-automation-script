@@ -1,0 +1,39 @@
+PANDUAN MENJALANKAN PROGRAM KKN
+================================
+
+Sebelum mulai:
+1. Pastikan komputer terhubung ke internet.
+2. Jangan memindahkan salah satu file dari folder ini.
+3. Pastikan file PKM_08_Data_Per_Peserta_Timeline_KK_Fix.json ada di folder ini.
+
+MODE AMAN (disarankan untuk percobaan pertama)
+------------------------------------------------
+Windows : klik dua kali JALANKAN_MODE_AMAN.bat
+Linux   : klik dua kali JALANKAN_MODE_AMAN_LINUX.sh
+macOS   : klik dua kali JALANKAN_MODE_AMAN_MAC.command
+
+Program akan login dan mengisi form, tetapi TIDAK menekan tombol Simpan.
+Tidak ada data baru yang dikirim ke website.
+
+MODE SUBMIT
+-----------
+Windows : klik dua kali JALANKAN_MODE_SUBMIT.bat
+Linux   : klik dua kali JALANKAN_MODE_SUBMIT_LINUX.sh
+macOS   : klik dua kali JALANKAN_MODE_SUBMIT_MAC.command
+
+Catatan submit hanya muncul sekali di awal. Tekan Enter atau Y untuk lanjut,
+atau tekan N untuk membatalkan.
+Setelah dimulai, program mengisi dan menyimpan data tanpa konfirmasi per data.
+Data yang sudah ada akan dilewati agar tidak diduplikasi.
+
+CATATAN
+-------
+- Saat pertama dijalankan, persiapan dapat memakan waktu karena program akan
+  memasang Python, dependencies, dan browser Chromium secara otomatis.
+- Jika sistem meminta password atau izin instalasi, ikuti petunjuk di layar.
+- Di macOS, klik kanan lalu pilih Open/Buka jika launcher pertama kali diblokir.
+- Di Linux, pilih Run/Execute jika muncul pilihan untuk membuka file launcher.
+- Jangan tutup jendela terminal atau browser selama program berjalan.
+- Email dan password dimasukkan saat diminta. Password tidak disimpan.
+- Jika muncul CAPTCHA, selesaikan di browser lalu ikuti petunjuk di layar.
+- Jalankan kembali launcher yang sama jika koneksi internet sempat terputus.
