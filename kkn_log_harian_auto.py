@@ -68,15 +68,15 @@ JSON_FILENAME = "PKM_08_Data_Per_Peserta_Timeline_KK_Fix.json"
 # Ganti "nanti saya isi sendiri" dengan email asli peserta. Baris yang masih
 # berisi placeholder TIDAK bisa dipakai untuk login (ditolak program).
 ALLOWED_EMAILS = {
-    "fariz": "nanti saya isi sendiri",
-    "rizal": "nanti saya isi sendiri",
-    "amel": "nanti saya isi sendiri",
-    "willy": "nanti saya isi sendiri",
     "ridwan": "ridwan20123030@digitechuniversity.ac.id",
-    "shidqi": "nanti saya isi sendiri",
-    "shello": "nanti saya isi sendiri",
-    "billa": "nanti saya isi sendiri",
-    "ali": "nanti saya isi sendiri",
+    "ali":"ali20223050@digitechuniversity.ac.id",
+    "willy":"willyi10223013@digitechuniversity.ac.id",
+    "amel":"amelia20123028@digitechuniversity.ac.id",
+    "rizal":"mrizal30123016@digitechuniversity.ac.id",
+    "billa":"nabila20123027@digitechuniversity.ac.id",
+    "shidqi":"muhammad20223009@digitechuniversity.ac.id",
+    "shello":"shellomita30123015@digitechuniversity.ac.id",
+    "fariz":"rb.fariz30123069@digitechuniversity.ac.id",
 }
 
 # Nilai default untuk field wajib yang tidak ada di JSON (keputusan koordinator).
@@ -288,7 +288,7 @@ def buka_browser(headless):
 
 def pilih_lokasi_program(page):
     """Pilih 'Kota Bandung' di dropdown Lokasi Program halaman login."""
-    select = page.locator("select").first
+    select = page.locator('select[name="lokasi"]')
     try:
         select.select_option(label=LOKASI_PROGRAM)
         return
@@ -306,12 +306,12 @@ def pilih_lokasi_program(page):
 def login(page, email, password):
     log("[LOGIN] Membuka halaman login ...")
     page.goto(BASE_URL + "/login")
-    page.wait_for_selector("select", timeout=20000)
+    page.wait_for_selector('input[name="password"]', timeout=20000)
     pilih_lokasi_program(page)
     log("[LOGIN] Lokasi program: %s" % LOKASI_PROGRAM)
-    page.locator('input[placeholder="Masukkan username"]').fill(email)
-    page.locator('input[placeholder="Masukkan kata sandi"]').fill(password)
-    page.locator('button:has-text("Masuk")').first.click()
+    page.locator('input[name="username"]').fill(email)
+    page.locator('input[name="password"]').fill(password)
+    page.locator("#btnSubmit_formAuthentication").click()
     try:
         page.wait_for_url("**/home**", timeout=25000)
     except Exception:
@@ -403,7 +403,7 @@ def baca_pendataan_yang_sudah_ada(page):
 def _buka_modal_tambah(page):
     page.goto(BASE_URL + "/logkegiatan")
     page.wait_for_selector("table tbody tr", timeout=20000)
-    page.locator('button:has-text("Tambah Log Harian")').first.click()
+    page.locator("#btnTambahLog").click()
     modal = page.locator("#modalku")
     modal.wait_for(state="visible", timeout=15000)
     page.wait_for_timeout(800)  # tunggu "Loading, mohon tunggu..." selesai
@@ -417,7 +417,7 @@ def _pilih_jenis_form(modal, label_radio):
 
 def _pilih_kategori_select2(page, modal, kategori):
     """Pilih kategori di dropdown Select2 (dengan fallback select native)."""
-    native = modal.locator("select")
+    native = modal.locator('select[name="id_kategori"]')
     if native.count() > 0:
         try:
             native.first.select_option(label=kategori)
@@ -432,10 +432,6 @@ def _pilih_kategori_select2(page, modal, kategori):
     page.locator(".select2-results__option", has_text=kategori).first.click()
     page.wait_for_timeout(300)
 
-
-def _input_teks_modal(modal):
-    """Semua input teks yang terlihat di modal, urut tampil."""
-    return [el for el in modal.locator('input[type="text"]:visible').all()]
 
 
 def _simpan_atau_tutup(page, modal, dry_run, record_id):
@@ -460,60 +456,38 @@ def _simpan_atau_tutup(page, modal, dry_run, record_id):
 def isi_log_harian(page, r, dry_run):
     modal = _buka_modal_tambah(page)
     _pilih_jenis_form(modal, "Log Harian / Kegiatan")
-    modal.locator('input[type="date"]').fill(r["date"])
+    modal.locator('input[name="tanggal"]:visible').fill(r["date"])
     _pilih_kategori_select2(page, modal, ACTIVITY_MAP[r["activity"].strip().lower()])
-    # Input teks urut: Nama Aktivitas, lalu Satuan & Tautan (dikenali dari placeholder).
-    nama_terisi = False
-    for el in _input_teks_modal(modal):
-        ph = (el.get_attribute("placeholder") or "").strip().lower()
-        if ph == "satuan":
-            el.fill(SATUAN_DEFAULT)
-        elif ph == "tautan":
-            if r.get("proof_link"):
-                el.fill(str(r["proof_link"]))
-        elif not nama_terisi:
-            el.fill(str(r["name"]))
-            nama_terisi = True
-    modal.locator("textarea").first.fill(str(r["description"]))
-    modal.locator('input[type="number"]').first.fill(str(VOLUME_DEFAULT))
+    modal.locator('input[name="nama_aktivitas"]:visible').fill(str(r["name"]))
+    modal.locator('textarea[name="deskripsi"]:visible').fill(str(r["description"]))
+    modal.locator('input[name="volume"]:visible').fill(str(VOLUME_DEFAULT))
+    modal.locator('input[name="satuan"]:visible').fill(SATUAN_DEFAULT)
+    if r.get("proof_link"):
+        modal.locator('input[name="tautan"]:visible').fill(str(r["proof_link"]))
     _simpan_atau_tutup(page, modal, dry_run, str(r.get("id", "log")))
 
 
 def isi_pendataan(page, r, dry_run):
     modal = _buka_modal_tambah(page)
     _pilih_jenis_form(modal, "Pendataan Sampah Penduduk")
-    modal.locator('input[type="date"]').fill(r["date"])
-    # Input teks urut: Nama KK, Alamat, RT, RW (RT/RW ber-placeholder 3 digit).
-    teks_lain, rt_rw = [], []
-    for el in _input_teks_modal(modal):
-        ph = (el.get_attribute("placeholder") or "").strip().lower()
-        if "3 digit" in ph:
-            rt_rw.append(el)
-        else:
-            teks_lain.append(el)
-    teks_lain[0].fill(str(r["head-of-family"]))   # Nama Kepala Keluarga
-    teks_lain[1].fill(str(r["address"]))          # Alamat Rumah
-    rt_rw[0].fill(rt_rw_3_digit(r["RT"]))         # RT
-    rt_rw[1].fill(rt_rw_3_digit(r["RW"]))         # RW
-    # Radio pemilahan: Ya / Tidak.
-    jawaban = "Ya" if str(r.get("have-sorted-the-waste")).lower() == "yes" else "Tidak"
-    try:
-        modal.get_by_text(jawaban, exact=True).first.click()
-    except Exception:
-        radio = modal.locator('input[type="radio"]:visible')
-        radio.nth(2 if jawaban == "Ya" else 3).click()
-    # Input angka urut: Jumlah Anggota, Organik, Anorganik, Residu.
-    angka = modal.locator('input[type="number"]:visible').all()
+    modal.locator('input[name="tanggal"]:visible').fill(r["date"])
+    modal.locator('input[name="nama_kepala_keluarga"]:visible').fill(
+        str(r["head-of-family"]))
+    modal.locator('input[name="alamat_rumah"]:visible').fill(str(r["address"]))
+    modal.locator('input[name="rt"]:visible').fill(rt_rw_3_digit(r["RT"]))
+    modal.locator('input[name="rw"]:visible').fill(rt_rw_3_digit(r["RW"]))
+    memilah = "1" if str(r.get("have-sorted-the-waste")).lower() == "yes" else "0"
+    modal.locator('input[name="memilah"][value="%s"]' % memilah).click()
     jumlah = r.get("number-of-family-numbers")
     if jumlah is None:
         jumlah = DEFAULT_JUMLAH_ANGGOTA
     residu = r.get("residue_kg")
     if residu is None:
         residu = RESIDU_DEFAULT
-    angka[0].fill(str(jumlah))
-    angka[1].fill(str(r["organic_kg"]))
-    angka[2].fill(str(r["unorganic_kg"]))
-    angka[3].fill(str(residu))
+    modal.locator('input[name="jumlah_anggota_keluarga"]:visible').fill(str(jumlah))
+    modal.locator('input[name="organik_kg"]:visible').fill(str(r["organic_kg"]))
+    modal.locator('input[name="anorganik_kg"]:visible').fill(str(r["unorganic_kg"]))
+    modal.locator('input[name="residu_kg"]:visible').fill(str(residu))
     _simpan_atau_tutup(page, modal, dry_run, str(r.get("id", "kk")))
 
 
