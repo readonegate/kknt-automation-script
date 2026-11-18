@@ -435,22 +435,32 @@ def _pilih_kategori_select2(page, modal, kategori):
 
 
 def _simpan_atau_tutup(page, modal, dry_run, record_id):
-    """Klik Simpan (atau Tutup bila dry-run) dan tunggu modal tertutup."""
+    """Simpan form lalu tutup modal; dry-run hanya menutup modal."""
+    tombol_tutup = modal.locator('button:has-text("Tutup")').first
     if dry_run:
-        modal.locator('button:has-text("Tutup")').first.click()
+        tombol_tutup.click()
         modal.wait_for(state="hidden", timeout=10000)
         return
-    modal.locator('button:has-text("Simpan")').first.click()
+
     try:
-        modal.wait_for(state="hidden", timeout=20000)
-    except Exception:
+        with page.expect_response(
+                lambda r: r.request.method == "POST"
+                and r.url.endswith("/logkegiatan/insert"), timeout=20000) as info:
+            modal.locator('button:has-text("Simpan")').first.click()
+        response = info.value
+        hasil = response.json()
+        if not response.ok or not hasil.get("success"):
+            raise RuntimeError(hasil.get("message") or
+                               "Server menolak data tanpa memberikan alasan.")
+        tombol_tutup.click()
+        modal.wait_for(state="hidden", timeout=10000)
+    except Exception as exc:
         try:
             page.screenshot(path="error_%s.png" % record_id)
             log("       (screenshot error disimpan: error_%s.png)" % record_id)
         except Exception:
             pass
-        raise RuntimeError("Form tidak tertutup setelah Simpan "
-                           "(kemungkinan ada pesan validasi).")
+        raise RuntimeError("Gagal menyimpan atau menutup form: %s" % exc)
 
 
 def isi_log_harian(page, r, dry_run):
