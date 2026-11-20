@@ -70,7 +70,7 @@ JSON_FILENAME = "PKM_08_Data_Per_Peserta_Timeline_KK_Fix.json"
 ALLOWED_EMAILS = {
     "ridwan": "ridwan20123030@digitechuniversity.ac.id",
     "ali":"ali20223050@digitechuniversity.ac.id",
-    "willy":"willyi10223013@digitechuniversity.ac.id",
+    "willy":"willy10223013@digitechuniversity.ac.id",
     "amel":"amelia20123028@digitechuniversity.ac.id",
     "rizal":"mrizal30123016@digitechuniversity.ac.id",
     "billa":"nabila20123027@digitechuniversity.ac.id",
